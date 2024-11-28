@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Targets Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+    <div id="map" style="height: 600px;"></div>
+    <script>
+        var map = L.map('map').setView([0, 0], 2);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        fetch('/api/targets/')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(target => {
+                    L.marker([target.latitude, target.longitude])
+                      .addTo(map)
+                      .bindPopup(`<b>${target.name}</b><br>Expires on: ${target.expiration_date}`);
+                });
+            });
+
+        map.on('click', function(e) {
+            var modal = document.getElementById('target-modal');
+            modal.style.display = 'block';
+            document.getElementById('latitude').value = e.latlng.lat;
+            document.getElementById('longitude').value = e.latlng.lng;
+        });
+    </script>
+
+    <!-- Modal -->
+    <div id="target-modal" style="display:none;">
+        <form id="target-form">
+            <label for="name">Name:</label><input type="text" id="name" name="name" required>
+            <label for="latitude">Latitude:</label><input type="text" id="latitude" name="latitude" required>
+            <label for="longitude">Longitude:</label><input type="text" id="longitude" name="longitude" required>
+            <label for="expiration_date">Expiration Date:</label><input type="date" id="expiration_date" name="expiration_date" required>
+            <button type="submit">Save</button>
+            <button type="button" onclick="document.getElementById('target-modal').style.display='none'">Cancel</button>
+        </form>
+    </div>
+</body>
+</html>
